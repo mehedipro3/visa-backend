@@ -3,7 +3,7 @@ const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 require('dotenv').config();
-const port = process.env.PORT || 5000 ;
+const port = process.env.PORT || 5000;
 
 //middleware 
 app.use(cors());
@@ -27,28 +27,37 @@ async function run() {
 
     const dataCollection = client.db('visa').collection('data');
 
-     // GET all visa
-     app.get("/datas", async (req, res) => {
-      const cursor = dataCollection.find();
-      const result = await cursor.toArray();
+    app.get("/datas", async (req, res) => {
+      const email = req.query.email;
+      const query = { user_email: email };
+      const visas = await dataCollection.find(query).toArray();
+      res.send(visas);
+    });
+
+    app.get("/data", async (req, res) => {
+      const result = await dataCollection.find().toArray();
       res.send(result);
     });
 
-     
-     app.get("/datas/:id", async (req, res) => {
+
+    app.get("/datas/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await dataCollection.findOne(query);
       res.send(result);
     });
 
-      
-       app.post("/datas", async (req, res) => {
-        const newUser = req.body;
-        const result = await dataCollection.insertOne(newUser);
-        const createdUser = { ...newUser, _id: result.insertedId };
-        res.send(createdUser);
-      });
+    app.post("/datas", async (req, res) => {
+      const newUser = req.body;
+      const result = await dataCollection.insertOne(newUser);
+      const createdUser = { ...newUser, _id: result.insertedId };
+      res.send(createdUser);
+    });
+
+
+
+    
+
 
 
     // Send a ping to confirm a successful connection
@@ -56,7 +65,7 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-   // await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
@@ -66,11 +75,11 @@ run().catch(console.dir);
 
 
 
-app.get("/",(req,res)=>{
+app.get("/", (req, res) => {
   res.send('visa server is running');
 })
 
-app.listen(port , ()=>{
+app.listen(port, () => {
   console.log(`visa server is running on port : ${port}`)
-  
+
 })
