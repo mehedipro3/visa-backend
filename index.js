@@ -1,11 +1,11 @@
-const express = require('express')
-const cors = require('cors');
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const express = require("express");
+const cors = require("cors");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
-require('dotenv').config();
+require("dotenv").config();
 const port = process.env.PORT || 5000;
 
-//middleware 
+//middleware
 app.use(cors());
 app.use(express.json());
 
@@ -17,15 +17,15 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
-    const dataCollection = client.db('visa').collection('data');
+    const dataCollection = client.db("visa").collection("data");
 
     app.get("/datas", async (req, res) => {
       const email = req.query.email;
@@ -38,7 +38,6 @@ async function run() {
       const result = await dataCollection.find().toArray();
       res.send(result);
     });
-
 
     app.get("/datas/:id", async (req, res) => {
       const id = req.params.id;
@@ -54,15 +53,20 @@ async function run() {
       res.send(createdUser);
     });
 
-
-
-    
-
-
+    app.delete("/data/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await dataCollection.deleteOne(query);
+      if (result.deletedCount === 0) {
+        res.status(404).send({ message: "User not found" });
+        return;
+      }
+      res.send({ message: "User deleted successfully" });
+    });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    //await client.db("admin").command({ ping: 1 });
+    //console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
@@ -70,16 +74,10 @@ async function run() {
 }
 run().catch(console.dir);
 
-
-
-
-
-
 app.get("/", (req, res) => {
-  res.send('visa server is running');
-})
+  res.send("visa server is running");
+});
 
 app.listen(port, () => {
-  console.log(`visa server is running on port : ${port}`)
-
-})
+  console.log(`visa server is running on port : ${port}`);
+});
